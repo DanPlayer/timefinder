@@ -37,7 +37,7 @@ var jiebaTimeTag = []string{"m", "t"}
 // cn2dig 中文单元转化为数字
 func cn2dig(src string) (rsl int) {
 	if src == "" {
-		return
+		return -1
 	}
 	compile, err := regexp.Compile("\\d+")
 	if err != nil {
@@ -50,14 +50,16 @@ func cn2dig(src string) (rsl int) {
 	rsl = 0
 	unit := 1
 	for _, ele := range []rune(src) {
-		unit, exist := utilCnUnit[string(ele)]
+		_, exist := utilCnUnit[string(ele)]
 		if !exist {
 			num, exist := utilCnNum[string(ele)]
 			if exist {
 				rsl += num * unit
 			} else {
-				return
+				return -1
 			}
+		} else {
+			unit, _ = utilCnUnit[string(ele)]
 		}
 	}
 	if rsl < unit {
@@ -78,6 +80,7 @@ func year2dig(year string) (rsl int) {
 		}
 	}
 
+	rsl = -1
 	compile, err := regexp.Compile("\\d+")
 	if err != nil {
 		return
@@ -155,9 +158,7 @@ func parseDatetime(msg string) (targetDate string) {
 		} else {
 			tmp = cn2dig(trimLastChar(v))
 		}
-		if tmp > 0 {
-			params[k] = tmp
-		}
+		params[k] = tmp
 	}
 	now := time.Now()
 	// 需要在today的基础上修正replace
@@ -225,6 +226,8 @@ func TimeExtract(text string) (finalRes []string) {
 		pegList []string
 	)
 
+	now := time.Now()
+
 	// 增加一些特殊词语的分词及词性
 	currentPath := path.Join(path.Dir(getCurrentFilePath()), "./jieba_dict.txt")
 	gojieba.USER_DICT_PATH = currentPath
@@ -242,15 +245,15 @@ func TimeExtract(text string) (finalRes []string) {
 				timeRes = append(timeRes, word)
 				txtList = append(txtList, txt)
 			}
-			word = time.Now().AddDate(0, 0, cpDate).Format(dayFormat)
+			word = now.AddDate(0, 0, cpDate).Format(dayFormat)
 			txt = k
 		} else if cpYear, exist := keyYear[k]; exist {
-			nYear := time.Now().Year()
+			nYear := now.Year()
 			word = strconv.Itoa(nYear) + strconv.Itoa(cpYear) + "年"
 			txt += k
 		} else if cpMonth, exist := keyMonth[k]; exist {
-			nMonth := time.Now().Year()
-			word = strconv.Itoa(nMonth) + strconv.Itoa(cpMonth) + "年"
+			nMonth := int(now.Month())
+			word = strconv.Itoa(nMonth + cpMonth) + "月"
 			txt += k
 		} else if word != "" {
 			if includes(jiebaTimeTag, v) || k == ":" {
@@ -291,7 +294,7 @@ func TimeExtract(text string) (finalRes []string) {
 func ternaryTime(ele int, defaultEle int) (re string) {
 	eleStr := strconv.Itoa(ele)
 	defaultEleStr := strconv.Itoa(defaultEle)
-	if eleStr != "" && eleStr != "0" {
+	if eleStr != "" && eleStr != "-1" {
 		re = eleStr
 	} else {
 		re = defaultEleStr

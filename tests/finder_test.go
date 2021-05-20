@@ -8,8 +8,10 @@ import (
 
 func TestTimeFinder(t *testing.T) {
 	var msg string
+	var extract []string
+
 	msg = "我要住到大后天"
-	extract := timefinder.TimeExtract(msg)
+	extract = timefinder.TimeExtract(msg)
 	fmt.Println(msg)
 	fmt.Println(extract)
 
@@ -28,7 +30,7 @@ func TestTimeFinder(t *testing.T) {
 	fmt.Println(msg)
 	fmt.Println(extract)
 
-	msg = "帮我我预定明天凌晨3点的飞机"
+	msg = "帮我预定明天凌晨3点的飞机"
 	extract = timefinder.TimeExtract(msg)
 	fmt.Println(msg)
 	fmt.Println(extract)
