@@ -253,7 +253,7 @@ func TimeExtract(text string) (finalRes []string) {
 			txt += k
 		} else if cpMonth, exist := keyMonth[k]; exist {
 			nMonth := int(now.Month())
-			word = strconv.Itoa(nMonth + cpMonth) + "月"
+			word = strconv.Itoa(nMonth+cpMonth) + "月"
 			txt += k
 		} else if word != "" {
 			if includes(jiebaTimeTag, v) || k == ":" {
