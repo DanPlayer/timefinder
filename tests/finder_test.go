@@ -2,8 +2,8 @@ package tests
 
 import (
 	"fmt"
+	"github.com/DanPlayer/timefinder"
 	"testing"
-	"timefinder"
 )
 
 func TestTimeFinder(t *testing.T) {
