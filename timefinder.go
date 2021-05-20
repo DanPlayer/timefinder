@@ -3,7 +3,6 @@ package timefinder
 import (
 	"fmt"
 	"github.com/yanyiwu/gojieba"
-	"only-brain-service/utils"
 	"path"
 	"regexp"
 	"runtime"
@@ -46,7 +45,7 @@ func cn2dig(src string) (rsl int) {
 	}
 	m := compile.FindString(src)
 	if m != "" {
-		return utils.Int(m)
+		return stringToInt(m)
 	}
 	rsl = 0
 	unit := 1
@@ -90,9 +89,9 @@ func year2dig(year string) (rsl int) {
 	}
 
 	if len(m) == 2 {
-		rsl = int(time.Now().Year()/100)*100 + utils.Int(m)
+		rsl = int(time.Now().Year()/100)*100 + stringToInt(m)
 	} else {
-		rsl = utils.Int(m)
+		rsl = stringToInt(m)
 	}
 
 	return
@@ -254,7 +253,7 @@ func TimeExtract(text string) (finalRes []string) {
 			word = strconv.Itoa(nMonth) + strconv.Itoa(cpMonth) + "年"
 			txt += k
 		} else if word != "" {
-			if utils.Includes(jiebaTimeTag, v) || k == ":" {
+			if includes(jiebaTimeTag, v) || k == ":" {
 				word = word + k
 				txt += k
 			} else {
@@ -263,7 +262,7 @@ func TimeExtract(text string) (finalRes []string) {
 				word = ""
 				txt = ""
 			}
-		} else if utils.Includes(jiebaTimeTag, v) || k == ":" {
+		} else if includes(jiebaTimeTag, v) || k == ":" {
 			word = k
 			txt = k
 		}
