@@ -50,5 +50,10 @@ func TestTimeFinder(t *testing.T) {
 	fmt.Println(msg)
 	fmt.Println(extract)
 
+	msg = "十分钟后提醒我喝水"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
 	fmt.Println("end tests")
 }

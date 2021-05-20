@@ -32,7 +32,7 @@ var keyDate = map[string]int{"今天": 0, "明天": 1, "后天": 2, "大后天":
 var keyYear = map[string]int{"今年": 0, "明年": 1, "后年": 2, "大后年": 3, "去年": -1, "前年": -2, "大前年": -2}
 var keyMonth = map[string]int{"这个月": 0, "上个月": -1, "下个月": 1}
 
-var jiebaTimeTag = []string{"m", "t"}
+var jiebaTimeTag = []string{"m", "t", "f"}
 
 // cn2dig 中文单元转化为数字
 func cn2dig(src string) (rsl int) {
@@ -44,6 +44,9 @@ func cn2dig(src string) (rsl int) {
 		return
 	}
 	m := compile.FindString(src)
+	if m == "0" {
+		return -1
+	}
 	if m != "" {
 		return stringToInt(m)
 	}
@@ -125,6 +128,9 @@ func parseDatetime(msg string) (targetDate string) {
 		return
 	}
 
+	compileDirect, _ := regexp.Compile("[前后]")
+	direction := compileDirect.FindString(msg)
+
 	year := allMatched[1]
 	month := allMatched[2]
 	day := allMatched[3]
@@ -161,13 +167,63 @@ func parseDatetime(msg string) (targetDate string) {
 		params[k] = tmp
 	}
 	now := time.Now()
-	// 需要在today的基础上修正replace
-	targetDate = ternaryTime(params["year"], now.Year()) + "-" +
-		ternaryTime(params["month"], int(now.Month())) + "-" +
-		ternaryTime(params["day"], now.Day()) + " " +
-		ternaryTime(params["hour"], now.Hour()) + ":" +
-		ternaryTime(params["minute"], now.Minute()) + ":" +
-		ternaryTime(params["second"], now.Second())
+	if len(direction) > 0 {
+		nowUnix := now.Unix()
+		for k, v := range params {
+			if k == "year" && v > 0 {
+				if direction == "前" {
+					nowUnix = now.AddDate( -v, 0, 0).Unix()
+				} else {
+					nowUnix = now.AddDate( v, 0, 0).Unix()
+				}
+			}
+			if k == "month" && v > 0 {
+				if direction == "前" {
+					nowUnix = now.AddDate( 0, -v, 0).Unix()
+				} else {
+					nowUnix = now.AddDate( 0, v, 0).Unix()
+				}
+			}
+			if k == "day" && v > 0 {
+				if direction == "前" {
+					nowUnix = now.AddDate( 0, 0, -v).Unix()
+				} else {
+					nowUnix = now.AddDate( 0, 0, v).Unix()
+				}
+			}
+			if k == "hour" && v > 0 {
+				if direction == "前" {
+					nowUnix = nowUnix - int64(v * 60 * 60)
+				} else {
+					nowUnix = nowUnix + int64(v * 60 * 60)
+				}
+			}
+			if k == "minute" && v > 0 {
+				if direction == "前" {
+					nowUnix = nowUnix - int64(v * 60)
+				} else {
+					nowUnix = nowUnix + int64(v * 60)
+				}
+			}
+			if k == "second" && v > 0 {
+				if direction == "前" {
+					nowUnix = nowUnix - int64(v)
+				} else {
+					nowUnix = nowUnix + int64(v)
+				}
+			}
+		}
+		targetDate = time.Unix(nowUnix, 0).Format(timeFormat)
+	} else {
+		// 需要在today的基础上修正replace
+		targetDate = ternaryTime(params["year"], now.Year()) + "-" +
+			ternaryTime(params["month"], int(now.Month())) + "-" +
+			ternaryTime(params["day"], now.Day()) + " " +
+			ternaryTime(params["hour"], now.Hour()) + ":" +
+			ternaryTime(params["minute"], now.Minute()) + ":" +
+			ternaryTime(params["second"], now.Second())
+	}
+
 	isPm := allMatched[4]
 	if len(isPm) > 0 {
 		if isPm == "下午" || isPm == "晚上" || isPm == "中午" {
