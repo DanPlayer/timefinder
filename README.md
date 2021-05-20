@@ -5,6 +5,11 @@
 - 分词基于GoJieba
 - 对自然语言（中文）提取时间
 
+##### 使用
+```
+go get github.com/DanPlayer/timefinder
+```
+
 ##### 示例
 ```
 func main() {
