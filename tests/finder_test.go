@@ -82,3 +82,25 @@ func TestTimeFinder(t *testing.T) {
 
 	fmt.Println("end tests")
 }
+
+func TestSpecialWeek(t *testing.T) {
+	var msg string
+	var extract []string
+
+	msg = "一个礼拜后提醒我开心"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
+	msg = "一个星期后提醒我开心"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
+	msg = "一周后提醒我开心"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
+	fmt.Println("end tests")
+}

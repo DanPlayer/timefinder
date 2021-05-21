@@ -25,7 +25,7 @@ var utilCnNum = map[string]int{
 
 // utilCnUnit 中文单元
 var utilCnUnit = map[string]int{
-	"个": 1,"十": 10, "百": 100, "千": 1000, "万": 10000,
+	"个": 1, "十": 10, "百": 100, "千": 1000, "万": 10000,
 }
 
 var keyDate = map[string]int{"今天": 0, "明天": 1, "后天": 2, "大后天": 3, "昨天": -1, "前天": -2, "大前天": -3}
@@ -60,6 +60,10 @@ func cn2dig(src string) (rsl int) {
 				rsl += num * unit
 			} else {
 				if string(ele) == "小" {
+					continue
+				}
+				// 对礼拜、星期特殊单元的处理
+				if string(ele) == "礼" || string(ele) == "星" {
 					continue
 				}
 				return -1
@@ -120,8 +124,9 @@ func parseDatetime(msg string) (targetDate string) {
 		"([0-9一二两三四五六七八九十]+[天号日])?" +
 		"([上中下午晚早凌晨]+)?" +
 		"([0-9零一二两三四五六七八九十百]+(?:[点:\\.时]|个小时|小时))?" +
-		"([0-9零一二三四五六七八九十百]+分?)?" +
-		"([0-9零一二三四五六七八九十百]+秒)?")
+		"([0-9零一二三四五六七八九十百]+分)?" +
+		"([0-9零一二三四五六七八九十百]+秒)?" +
+		"([0-9零一二三四五六七八九十百]+(?:星期|周|礼拜|个星期|个周|个礼拜))?")
 	if err != nil {
 		return
 	}
@@ -149,6 +154,7 @@ func parseDatetime(msg string) (targetDate string) {
 	if len(allMatched[7]) > 0 {
 		second = allMatched[7]
 	}
+	week := allMatched[8]
 
 	res := map[string]string{
 		"year":   year,
@@ -157,6 +163,7 @@ func parseDatetime(msg string) (targetDate string) {
 		"hour":   hour,
 		"minute": minute,
 		"second": second,
+		"week": week,
 	}
 
 	params := make(map[string]int)
@@ -175,37 +182,37 @@ func parseDatetime(msg string) (targetDate string) {
 		for k, v := range params {
 			if k == "year" && v > 0 {
 				if direction == "前" {
-					nowUnix = now.AddDate( -v, 0, 0).Unix()
+					nowUnix = now.AddDate(-v, 0, 0).Unix()
 				} else {
-					nowUnix = now.AddDate( v, 0, 0).Unix()
+					nowUnix = now.AddDate(v, 0, 0).Unix()
 				}
 			}
 			if k == "month" && v > 0 {
 				if direction == "前" {
-					nowUnix = now.AddDate( 0, -v, 0).Unix()
+					nowUnix = now.AddDate(0, -v, 0).Unix()
 				} else {
-					nowUnix = now.AddDate( 0, v, 0).Unix()
+					nowUnix = now.AddDate(0, v, 0).Unix()
 				}
 			}
 			if k == "day" && v > 0 {
 				if direction == "前" {
-					nowUnix = now.AddDate( 0, 0, -v).Unix()
+					nowUnix = now.AddDate(0, 0, -v).Unix()
 				} else {
-					nowUnix = now.AddDate( 0, 0, v).Unix()
+					nowUnix = now.AddDate(0, 0, v).Unix()
 				}
 			}
 			if k == "hour" && v > 0 {
 				if direction == "前" {
-					nowUnix = nowUnix - int64(v * 60 * 60)
+					nowUnix = nowUnix - int64(v*60*60)
 				} else {
-					nowUnix = nowUnix + int64(v * 60 * 60)
+					nowUnix = nowUnix + int64(v*60*60)
 				}
 			}
 			if k == "minute" && v > 0 {
 				if direction == "前" {
-					nowUnix = nowUnix - int64(v * 60)
+					nowUnix = nowUnix - int64(v*60)
 				} else {
-					nowUnix = nowUnix + int64(v * 60)
+					nowUnix = nowUnix + int64(v*60)
 				}
 			}
 			if k == "second" && v > 0 {
@@ -213,6 +220,13 @@ func parseDatetime(msg string) (targetDate string) {
 					nowUnix = nowUnix - int64(v)
 				} else {
 					nowUnix = nowUnix + int64(v)
+				}
+			}
+			if k == "week" && v > 0 {
+				if direction == "前" {
+					nowUnix = now.AddDate(0, 0, -(v * 7)).Unix()
+				} else {
+					nowUnix = now.AddDate(0, 0, v * 7).Unix()
 				}
 			}
 		}
