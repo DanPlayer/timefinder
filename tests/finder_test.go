@@ -109,6 +109,11 @@ func TestWeekDay(t *testing.T)  {
 	var msg string
 	var extract []string
 
+	msg = "这周日提醒我做事"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
 	msg = "这周二提醒我做事"
 	extract = timefinder.TimeExtract(msg)
 	fmt.Println(msg)

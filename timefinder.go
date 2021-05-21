@@ -126,7 +126,12 @@ func weekday2dig(weekday string) (rsl int) {
 	}
 	weekdaySplit := []rune(weekday)
 	numStr := weekdaySplit[len(weekdaySplit) - 1]
-	num := cn2dig(string(numStr))
+	var num int
+	if string(numStr) == "日" {
+		num = 7
+	} else {
+		num = cn2dig(string(numStr))
+	}
 	weekdayPre := trimLastChar(weekday)
 	for k, v := range keyWeekDay {
 		if weekdayPre == k {
