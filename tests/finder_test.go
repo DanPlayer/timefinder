@@ -104,3 +104,28 @@ func TestSpecialWeek(t *testing.T) {
 
 	fmt.Println("end tests")
 }
+
+func TestWeekDay(t *testing.T)  {
+	var msg string
+	var extract []string
+
+	msg = "这周二提醒我做事"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
+	msg = "下下周六提醒我做事"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
+	msg = "下下个礼拜六提醒我做事"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
+	msg = "下下个星期六提醒我做事"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+}

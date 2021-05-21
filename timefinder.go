@@ -31,6 +31,11 @@ var utilCnUnit = map[string]int{
 var keyDate = map[string]int{"今天": 0, "明天": 1, "后天": 2, "大后天": 3, "昨天": -1, "前天": -2, "大前天": -3}
 var keyYear = map[string]int{"今年": 0, "明年": 1, "后年": 2, "大后年": 3, "去年": -1, "前年": -2, "大前年": -2}
 var keyMonth = map[string]int{"这个月": 0, "上个月": -1, "下个月": 1}
+var keyWeekDay = map[string]int{
+	"这个周": 0, "这周": 0, "本周": 0, "周": 0, "下周": 7, "下下周": 14, "上周": -7, "上上周": -14,
+	"这个星期": 0, "这星期": 0, "本星期": 0, "星期": 0, "下个星期": 7, "下下个星期": 14, "上个星期": -7, "上上个星期": -14,
+	"这个礼拜": 0, "这礼拜": 0, "本礼拜": 0, "礼拜": 0, "下个礼拜": 7, "下下个礼拜": 14, "上个礼拜": -7, "上上个礼拜": -14,
+}
 
 var jiebaTimeTag = []string{"m", "t", "f"}
 
@@ -110,6 +115,28 @@ func year2dig(year string) (rsl int) {
 	return
 }
 
+// weekday2dig 周时转化为日差额数字
+func weekday2dig(weekday string) (rsl int) {
+	if weekday == "" {
+		return
+	}
+	curWeekDay := int(time.Now().Weekday())
+	if curWeekDay == 0 {
+		curWeekDay = 7
+	}
+	weekdaySplit := []rune(weekday)
+	numStr := weekdaySplit[len(weekdaySplit) - 1]
+	num := cn2dig(string(numStr))
+	weekdayPre := trimLastChar(weekday)
+	for k, v := range keyWeekDay {
+		if weekdayPre == k {
+			rsl = v - (curWeekDay - num)
+		}
+	}
+
+	return
+}
+
 // parseDatetime 函数，用以将每个提取到的文本日期串进行时间转换。
 // 其主要通过正则表达式将日期串进行切割，分为"年" "月" "日" "时" H分""秒"等具体维度，
 // 然后针对每个子维度单独再进行识别。
@@ -122,11 +149,12 @@ func parseDatetime(msg string) (targetDate string) {
 		"([0-9零一二两三四五六七八九十]+年)?" +
 		"([0-9一二两三四五六七八九十]+(?:个月|月))?" +
 		"([0-9一二两三四五六七八九十]+[天号日])?" +
-		"([上中下午晚早凌晨]+)?" +
+		"(上午|中午|下午|晚|早|凌晨)?" +
 		"([0-9零一二两三四五六七八九十百]+(?:[点:\\.时]|个小时|小时))?" +
 		"([0-9零一二三四五六七八九十百]+分)?" +
 		"([0-9零一二三四五六七八九十百]+秒)?" +
-		"([0-9零一二三四五六七八九十百]+(?:星期|周|礼拜|个星期|个周|个礼拜))?")
+		"([0-9零一二三四五六七八九十百]+(?:星期|周|礼拜|个星期|个礼拜))?" +
+		"((?:这周|这个周|本周|周|下周|下下周|上周|上上周|这星期|这个星期|星期|下个星期|下下个星期|上个星期|上上个星期|这礼拜|这个礼拜|礼拜|下个礼拜|下下个礼拜|上个礼拜|上上个礼拜)+[1-7一二三四五六七日])?")
 	if err != nil {
 		return
 	}
@@ -155,15 +183,17 @@ func parseDatetime(msg string) (targetDate string) {
 		second = allMatched[7]
 	}
 	week := allMatched[8]
+	weekday := allMatched[9]
 
 	res := map[string]string{
-		"year":   year,
-		"month":  month,
-		"day":    day,
-		"hour":   hour,
-		"minute": minute,
-		"second": second,
-		"week": week,
+		"year":    year,
+		"month":   month,
+		"day":     day,
+		"hour":    hour,
+		"minute":  minute,
+		"second":  second,
+		"week":    week,
+		"weekday": weekday,
 	}
 
 	params := make(map[string]int)
@@ -171,14 +201,16 @@ func parseDatetime(msg string) (targetDate string) {
 		var tmp int
 		if k == "year" {
 			tmp = year2dig(trimLastChar(v))
+		} else if k == "weekday" {
+			tmp = weekday2dig(v)
 		} else {
 			tmp = cn2dig(trimLastChar(v))
 		}
 		params[k] = tmp
 	}
 	now := time.Now()
+	nowUnix := now.Unix()
 	if len(direction) > 0 {
-		nowUnix := now.Unix()
 		for k, v := range params {
 			if k == "year" && v > 0 {
 				if direction == "前" {
@@ -226,10 +258,13 @@ func parseDatetime(msg string) (targetDate string) {
 				if direction == "前" {
 					nowUnix = now.AddDate(0, 0, -(v * 7)).Unix()
 				} else {
-					nowUnix = now.AddDate(0, 0, v * 7).Unix()
+					nowUnix = now.AddDate(0, 0, v*7).Unix()
 				}
 			}
 		}
+		targetDate = time.Unix(nowUnix, 0).Format(timeFormat)
+	} else if params["weekday"] != 0 {
+		nowUnix = now.AddDate(0, 0, params["weekday"]).Unix()
 		targetDate = time.Unix(nowUnix, 0).Format(timeFormat)
 	} else {
 		// 需要在today的基础上修正replace
