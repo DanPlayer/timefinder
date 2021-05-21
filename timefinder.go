@@ -25,7 +25,7 @@ var utilCnNum = map[string]int{
 
 // utilCnUnit 中文单元
 var utilCnUnit = map[string]int{
-	"十": 10, "百": 100, "千": 1000, "万": 10000,
+	"个": 1,"十": 10, "百": 100, "千": 1000, "万": 10000,
 }
 
 var keyDate = map[string]int{"今天": 0, "明天": 1, "后天": 2, "大后天": 3, "昨天": -1, "前天": -2, "大前天": -3}
@@ -45,7 +45,7 @@ func cn2dig(src string) (rsl int) {
 	}
 	m := compile.FindString(src)
 	if m == "0" {
-		return -1
+		return
 	}
 	if m != "" {
 		return stringToInt(m)
@@ -59,6 +59,9 @@ func cn2dig(src string) (rsl int) {
 			if exist {
 				rsl += num * unit
 			} else {
+				if string(ele) == "小" {
+					continue
+				}
 				return -1
 			}
 		} else {
@@ -113,10 +116,10 @@ func parseDatetime(msg string) (targetDate string) {
 
 	compile, err := regexp.Compile("" +
 		"([0-9零一二两三四五六七八九十]+年)?" +
-		"([0-9一二两三四五六七八九十]+月)?" +
-		"([0-9一二两三四五六七八九十]+[号日])?" +
+		"([0-9一二两三四五六七八九十]+(?:个月|月))?" +
+		"([0-9一二两三四五六七八九十]+[天号日])?" +
 		"([上中下午晚早凌晨]+)?" +
-		"([0-9零一二两三四五六七八九十百]+[点:\\.时])?" +
+		"([0-9零一二两三四五六七八九十百]+(?:[点:\\.时]|个小时|小时))?" +
 		"([0-9零一二三四五六七八九十百]+分?)?" +
 		"([0-9零一二三四五六七八九十百]+秒)?")
 	if err != nil {

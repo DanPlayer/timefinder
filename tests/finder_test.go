@@ -10,6 +10,31 @@ func TestTimeFinder(t *testing.T) {
 	var msg string
 	var extract []string
 
+	msg = "一天后提醒我喝水"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
+	msg = "一年后提醒我喝水"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
+	msg = "一个月后提醒我喝水"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
+	msg = "一月后提醒我喝水"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
+	msg = "一个小时后提醒我喝水"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
 	msg = "我要住到大后天"
 	extract = timefinder.TimeExtract(msg)
 	fmt.Println(msg)
