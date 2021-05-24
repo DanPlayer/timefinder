@@ -290,7 +290,7 @@ func parseDatetime(msg string) (targetDate string) {
 			}
 
 			if parse.Hour() < 12 {
-				parse = parse.Add(60 * 60 * 12)
+				parse = parse.Add(60 * 60 * 12 * time.Second)
 			}
 			targetDate = parse.Format(timeFormat)
 		}
