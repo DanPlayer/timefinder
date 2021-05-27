@@ -1,3 +1,9 @@
+# github.com/adamzy/cedar-go v0.0.0-20170805034717-80a9c64b256d
+## explicit
+github.com/adamzy/cedar-go
+# github.com/huichen/sego v0.0.0-20180617034105-3f3c8a8cfacc
+## explicit
+github.com/huichen/sego
 # github.com/yanyiwu/gojieba v1.1.2
 ## explicit
 github.com/yanyiwu/gojieba

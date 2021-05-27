@@ -2,12 +2,11 @@ package timefinder
 
 import (
 	"fmt"
-	"github.com/yanyiwu/gojieba"
+	"github.com/huichen/sego"
 	"path"
 	"regexp"
 	"runtime"
 	"strconv"
-	"strings"
 	"time"
 	"unicode/utf8"
 )
@@ -342,16 +341,18 @@ func TimeExtract(text string) (finalRes []string) {
 	now := time.Now()
 
 	// 增加一些特殊词语的分词及词性
-	currentPath := path.Join(path.Dir(getCurrentFilePath()), "./jieba_dict.txt")
-	gojieba.USER_DICT_PATH = currentPath
-	psg := gojieba.NewJieba()
-	defer psg.Free()
+	currentPath := path.Join(path.Dir(getCurrentFilePath()), "./jieba_dict.txt") + "," + path.Join(path.Dir(getCurrentFilePath()), "./dictionary.txt")
 
-	cutList := psg.Tag(text)
-	for _, tag := range cutList {
-		tagSplit := strings.Split(tag, "/")
-		k := tagSplit[0]
-		v := tagSplit[1]
+	// 载入词典
+	var segmenter sego.Segmenter
+	segmenter.LoadDictionary(currentPath)
+
+	// 分词
+	segments := segmenter.Segment([]byte(text))
+
+	for _, tag := range segments {
+		k := tag.Token().Text()
+		v := tag.Token().Pos()
 		pegList = append(pegList, fmt.Sprintf("%v/%s", k, v))
 		if cpDate, exist := keyDate[k]; exist {
 			if word != "" {
