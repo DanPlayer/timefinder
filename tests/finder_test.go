@@ -10,6 +10,16 @@ func TestTimeFinder(t *testing.T) {
 	var msg string
 	var extract []string
 
+	msg = "明早十点喊我喝水"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
+	msg = "明天早上十点喊我喝水"
+	extract = timefinder.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract)
+
 	msg = "明天下午三点提醒我喝水"
 	extract = timefinder.TimeExtract(msg)
 	fmt.Println(msg)
