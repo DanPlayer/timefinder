@@ -4,9 +4,5 @@ github.com/adamzy/cedar-go
 # github.com/huichen/sego v0.0.0-20180617034105-3f3c8a8cfacc
 ## explicit
 github.com/huichen/sego
-# github.com/yanyiwu/gojieba v1.1.2
+# github.com/issue9/assert v1.4.1
 ## explicit
-github.com/yanyiwu/gojieba
-github.com/yanyiwu/gojieba/deps/cppjieba
-github.com/yanyiwu/gojieba/deps/limonp
-github.com/yanyiwu/gojieba/dict

@@ -36,7 +36,7 @@ var keyWeekDay = map[string]int{
 	"这个礼拜": 0, "这礼拜": 0, "本礼拜": 0, "礼拜": 0, "下个礼拜": 7, "下下个礼拜": 14, "上个礼拜": -7, "上上个礼拜": -14,
 }
 
-var jiebaTimeTag = []string{"m", "t", "f"}
+var jiebaTimeTag = []string{"m", "t", "f", "x"}
 
 // cn2dig 中文单元转化为数字
 func cn2dig(src string) (rsl int) {
@@ -350,6 +350,8 @@ func TimeExtract(text string) (finalRes []string) {
 	// 分词
 	segments := segmenter.Segment([]byte(text))
 
+	//str := sego.SegmentsToString(segments, false)
+	//fmt.Println(str)
 	for _, tag := range segments {
 		k := tag.Token().Text()
 		v := tag.Token().Pos()
