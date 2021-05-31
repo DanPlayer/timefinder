@@ -36,7 +36,7 @@ var keyWeekDay = map[string]int{
 	"这个礼拜": 0, "这礼拜": 0, "本礼拜": 0, "礼拜": 0, "下个礼拜": 7, "下下个礼拜": 14, "上个礼拜": -7, "上上个礼拜": -14,
 }
 
-var jiebaTimeTag = []string{"m", "t", "f", "x"}
+var jiebaTimeTag = []string{"m", "t", "f"}
 
 // cn2dig 中文单元转化为数字
 func cn2dig(src string) (rsl int) {
@@ -355,6 +355,15 @@ func TimeExtract(text string) (finalRes []string) {
 	for _, tag := range segments {
 		k := tag.Token().Text()
 		v := tag.Token().Pos()
+		isXNum := false
+		if v == "x" {
+			_, err := strconv.Atoi(k)
+			if err != nil {
+				isXNum = false
+			} else {
+				isXNum = true
+			}
+		}
 		pegList = append(pegList, fmt.Sprintf("%v/%s", k, v))
 		if cpDate, exist := keyDate[k]; exist {
 			if word != "" {
@@ -372,7 +381,7 @@ func TimeExtract(text string) (finalRes []string) {
 			word = strconv.Itoa(nMonth+cpMonth) + "月"
 			txt += k
 		} else if word != "" {
-			if includes(jiebaTimeTag, v) || k == ":" {
+			if includes(jiebaTimeTag, v) || k == ":" || isXNum {
 				word = word + k
 				txt += k
 			} else {
@@ -381,7 +390,7 @@ func TimeExtract(text string) (finalRes []string) {
 				word = ""
 				txt = ""
 			}
-		} else if includes(jiebaTimeTag, v) || k == ":" {
+		} else if includes(jiebaTimeTag, v) || k == ":" || isXNum {
 			word = k
 			txt = k
 		}
