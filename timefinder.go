@@ -167,6 +167,15 @@ func parseDatetime(msg string) (targetDate string) {
 	if len(allMatched) == 0 {
 		return
 	}
+	emptyMatched := true
+	for _, matched := range allMatched {
+		if matched != "" {
+			emptyMatched = false
+		}
+	}
+	if emptyMatched {
+		return
+	}
 
 	compileDirect, _ := regexp.Compile("[前后]")
 	direction := compileDirect.FindString(msg)
@@ -410,7 +419,9 @@ func TimeExtract(text string) (finalRes []string) {
 	}
 
 	for _, ele := range result {
-		finalRes = append(finalRes, parseDatetime(ele))
+		if parseDatetime(ele) != "" {
+			finalRes = append(finalRes, parseDatetime(ele))
+		}
 	}
 
 	return
