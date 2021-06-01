@@ -149,10 +149,12 @@ func weekday2dig(weekday string) (rsl int) {
 // parseDatetime 函数，用以将每个提取到的文本日期串进行时间转换。
 // 其主要通过正则表达式将日期串进行切割，分为"年" "月" "日" "时" H分""秒"等具体维度，
 // 然后针对每个子维度单独再进行识别。
-func parseDatetime(msg string) (targetDate string) {
+func parseDatetime(msg string) (parseTime time.Time) {
 	if len(msg) == 0 {
 		return
 	}
+
+	var targetDate string
 
 	compile, err := regexp.Compile("" +
 		"([0-9零一二两三四五六七八九十]+年)?" +
@@ -329,7 +331,12 @@ func parseDatetime(msg string) (targetDate string) {
 			targetDate = parse.Format(timeFormat)
 		}
 	}
-	return targetDate
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	parseTime, err = time.ParseInLocation(timeFormat, targetDate, loc)
+	if err != nil {
+		return
+	}
+	return
 }
 
 func trimLastChar(s string) string {
@@ -376,7 +383,7 @@ func New() *TimeFinder {
 
 // TimeExtract 通过Jieba分词将带有时间信息的词进行切分，然后记录连续时间信息的词
 // time extract:对句子进行解析，提取其中所有能表示 日期时间的词，并进行上下文拼接
-func (tf *TimeFinder) TimeExtract(text string) (finalRes []string) {
+func (tf *TimeFinder) TimeExtract(text string) (finalRes []time.Time) {
 	var (
 		timeRes []string
 		txtList []string
@@ -450,7 +457,7 @@ func (tf *TimeFinder) TimeExtract(text string) (finalRes []string) {
 	}
 
 	for _, ele := range result {
-		if parseDatetime(ele) != "" {
+		if !parseDatetime(ele).IsZero() {
 			finalRes = append(finalRes, parseDatetime(ele))
 		}
 	}
