@@ -7,9 +7,14 @@ import (
 	"regexp"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 )
+
+type TimeFinder struct {
+	Segmenter sego.Segmenter
+}
 
 const timeFormat = "2006-01-02 15:04:05"
 const dayFormat = "2006年01月02日"
@@ -36,7 +41,7 @@ var keyWeekDay = map[string]int{
 	"这个礼拜": 0, "这礼拜": 0, "本礼拜": 0, "礼拜": 0, "下个礼拜": 7, "下下个礼拜": 14, "上个礼拜": -7, "上上个礼拜": -14,
 }
 
-var jiebaTimeTag = []string{"m", "t", "f"}
+var jiebaTimeTag = []string{"m", "t", "f", "q"}
 
 // cn2dig 中文单元转化为数字
 func cn2dig(src string) (rsl int) {
@@ -124,7 +129,7 @@ func weekday2dig(weekday string) (rsl int) {
 		curWeekDay = 7
 	}
 	weekdaySplit := []rune(weekday)
-	numStr := weekdaySplit[len(weekdaySplit) - 1]
+	numStr := weekdaySplit[len(weekdaySplit)-1]
 	var num int
 	if string(numStr) == "日" {
 		num = 7
@@ -154,11 +159,12 @@ func parseDatetime(msg string) (targetDate string) {
 		"([0-9一二两三四五六七八九十]+(?:个月|月))?" +
 		"([0-9一二两三四五六七八九十]+[天号日])?" +
 		"(上午|中午|下午|晚上|晚|早上|早|凌晨)?" +
-		"([0-9零一二两三四五六七八九十百]+(?:[点:\\.时]|个小时|小时))?" +
+		"([0-9零一二两三四五六七八九十百]+(?:[点\\.时]|个小时|小时))?" +
 		"([0-9零一二三四五六七八九十百]+分)?" +
 		"([0-9零一二三四五六七八九十百]+秒)?" +
 		"([0-9零一二三四五六七八九十百]+(?:星期|周|礼拜|个星期|个礼拜))?" +
-		"((?:这周|这个周|本周|周|下周|下下周|上周|上上周|这星期|这个星期|星期|下个星期|下下个星期|上个星期|上上个星期|这礼拜|这个礼拜|礼拜|下个礼拜|下下个礼拜|上个礼拜|上上个礼拜)+[1-7一二三四五六七日])?")
+		"((?:这周|这个周|本周|下周|下下周|上周|上上周|这星期|这个星期|下个星期|下下个星期|上个星期|上上个星期|这礼拜|这个礼拜|下个礼拜|下下个礼拜|上个礼拜|上上个礼拜|周|星期|礼拜)[1-7一二三四五六七日])?" +
+		"([0-9零一二两三四五六七八九十百]+:[0-9零一二两三四五六七八九十百]+(?::[0-9零一二两三四五六七八九十百])?)?")
 	if err != nil {
 		return
 	}
@@ -198,6 +204,21 @@ func parseDatetime(msg string) (targetDate string) {
 	week := allMatched[8]
 	weekday := allMatched[9]
 
+	if len(allMatched[10]) > 0 {
+		matched10 := strings.Split(allMatched[10], ":")
+		for i, s := range matched10 {
+			if i == 0 {
+				hour = s
+			}
+			if i == 1 {
+				minute = s
+			}
+			if i == 2 {
+				second = s
+			}
+		}
+	}
+
 	res := map[string]string{
 		"year":    year,
 		"month":   month,
@@ -217,7 +238,12 @@ func parseDatetime(msg string) (targetDate string) {
 		} else if k == "weekday" {
 			tmp = weekday2dig(v)
 		} else {
-			tmp = cn2dig(trimLastChar(v))
+			_, err := strconv.Atoi(v)
+			if err != nil {
+				tmp = cn2dig(trimLastChar(v))
+			} else {
+				tmp = cn2dig(v)
+			}
 		}
 		params[k] = tmp
 	}
@@ -336,9 +362,21 @@ func checkTimeValid(word string) (rsl string) {
 	return replacedWord
 }
 
+// New 初始化
+func New() *TimeFinder {
+	finder := new(TimeFinder)
+
+	// 增加一些特殊词语的分词及词性
+	currentPath := path.Join(path.Dir(getCurrentFilePath()), "./jieba_dict.txt") + "," + path.Join(path.Dir(getCurrentFilePath()), "./dictionary.txt")
+
+	finder.Segmenter.LoadDictionary(currentPath)
+
+	return finder
+}
+
 // TimeExtract 通过Jieba分词将带有时间信息的词进行切分，然后记录连续时间信息的词
 // time extract:对句子进行解析，提取其中所有能表示 日期时间的词，并进行上下文拼接
-func TimeExtract(text string) (finalRes []string) {
+func (tf *TimeFinder) TimeExtract(text string) (finalRes []string) {
 	var (
 		timeRes []string
 		txtList []string
@@ -349,15 +387,8 @@ func TimeExtract(text string) (finalRes []string) {
 
 	now := time.Now()
 
-	// 增加一些特殊词语的分词及词性
-	currentPath := path.Join(path.Dir(getCurrentFilePath()), "./jieba_dict.txt") + "," + path.Join(path.Dir(getCurrentFilePath()), "./dictionary.txt")
-
-	// 载入词典
-	var segmenter sego.Segmenter
-	segmenter.LoadDictionary(currentPath)
-
 	// 分词
-	segments := segmenter.Segment([]byte(text))
+	segments := tf.Segmenter.Segment([]byte(text))
 
 	//str := sego.SegmentsToString(segments, false)
 	//fmt.Println(str)
