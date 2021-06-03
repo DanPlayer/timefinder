@@ -199,6 +199,10 @@ func parseDatetime(msg string) (parseTime time.Time) {
 	if len(allMatched[6]) > 0 {
 		minute = allMatched[6]
 	}
+	// 增加对时半的支持
+	if minute == "00" && strings.Contains(msg, hour + "半") {
+		minute = "30"
+	}
 	second := "00"
 	if len(allMatched[7]) > 0 {
 		second = allMatched[7]
