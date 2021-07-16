@@ -374,11 +374,15 @@ func checkTimeValid(word string) (rsl string) {
 }
 
 // New 初始化
-func New() *TimeFinder {
+func New(fileNames ...string) *TimeFinder {
 	finder := new(TimeFinder)
-
-	// 增加一些特殊词语的分词及词性
-	currentPath := path.Join(path.Dir(getCurrentFilePath()), "./jieba_dict.txt") + "," + path.Join(path.Dir(getCurrentFilePath()), "./dictionary.txt")
+	currentPath := ""
+	if len(fileNames) < 1 {
+		// 增加一些特殊词语的分词及词性
+		currentPath = path.Join(path.Dir(getCurrentFilePath()), "./jieba_dict.txt") + "," + path.Join(path.Dir(getCurrentFilePath()), "./dictionary.txt")
+	} else {
+		currentPath = strings.Join(fileNames, ",")
+	}
 
 	finder.Segmenter.LoadDictionary(currentPath)
 
