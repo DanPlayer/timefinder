@@ -14,6 +14,11 @@ func TestTimeFinder(t *testing.T) {
 	var extract []time.Time
 
 	segmenter := timefinder.New("../jieba_dict.txt", "../dictionary.txt")
+	msg = "今天晚上8点"
+	extract = segmenter.TimeExtract(msg)
+	fmt.Println(msg)
+	fmt.Println(extract[0].Format(timeFormat))
+
 	msg = "今天下午三点"
 	extract = segmenter.TimeExtract(msg)
 	fmt.Println(msg)
