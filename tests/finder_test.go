@@ -2,12 +2,58 @@ package tests
 
 import (
 	"fmt"
-	"github.com/DanPlayer/timefinder"
+	"github.com/516396859/timefinder/v2"
 	"testing"
 	"time"
 )
 
 const timeFormat = "2006-01-02 15:04:05"
+
+func TestAny(t *testing.T) {
+	segmenter := timefinder.New("../jieba_dict.txt", "../dictionary.txt")
+
+	//var msg = "下个月8日"
+	//nlpTransferDate(msg, segmenter)
+
+	var msg = "下周三晚上9点"
+	nlpTransferDate(msg, segmenter)
+
+	msg = "一个小时后提醒我喝水"
+	nlpTransferDate(msg, segmenter)
+
+	msg = "周日19点"
+	nlpTransferDate(msg, segmenter)
+
+	msg = "周日下午2点半"
+	nlpTransferDate(msg, segmenter)
+
+	msg = "周日下午18点"
+	nlpTransferDate(msg, segmenter)
+
+	msg = "19号下午9点"
+	nlpTransferDate(msg, segmenter)
+
+	msg = "下个月16号上午9点"
+	nlpTransferDate(msg, segmenter)
+
+	msg = "下周三晚上9点"
+	nlpTransferDate(msg, segmenter)
+
+	msg = "下个月上午17点"
+	nlpTransferDate(msg, segmenter)
+
+	msg = "下个月8号"
+	nlpTransferDate(msg, segmenter)
+
+}
+
+func nlpTransferDate(msg string, segmenter *timefinder.TimeFinder) {
+	var extract []time.Time
+	extract = segmenter.TimeExtract(msg)
+	fmt.Println()
+	fmt.Println(msg)
+	fmt.Println(extract[0].Format(timeFormat))
+}
 
 func TestTimeFinder(t *testing.T) {
 	var msg string
@@ -166,7 +212,7 @@ func TestSpecialWeek(t *testing.T) {
 	fmt.Println("end tests")
 }
 
-func TestWeekDay(t *testing.T)  {
+func TestWeekDay(t *testing.T) {
 	var msg string
 	var extract []time.Time
 
